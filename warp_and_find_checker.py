@@ -16,6 +16,7 @@ args = parser.parse_args()
 input_path = args.input_path
 output_path = args.output_path
 
+display = False # do you want to display one image?
 which_image = 1 # which image to display
 
 
@@ -36,8 +37,9 @@ bar_widths = [x['canonical_board']['bar_width_to_checker_width'] for x in infos]
 board_widths = [x['canonical_board']['board_width_to_board_height'] for x in infos]
 pip_lengths = [x['canonical_board']['pip_length_to_board_height'] for x in infos]
 
-# # visualize one input image
-# cv2.imshow('one input image', images[0])
+if display:
+    # visualize one input image
+    cv2.imshow('one input image', images[0])
 
 
 # remove perspective
@@ -70,8 +72,9 @@ for i, image in enumerate(images):
 # convert to grayscale for hough circles
 grays = [cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) for img in no_persps]
     
-# visualize one image with the perspective removed in grayscale
-cv2.imshow('one perspectiveless image', grays[which_image])
+if display:
+    # visualize one image with the perspective removed in grayscale
+    cv2.imshow('one perspectiveless image', grays[which_image])
 
 
 # account for distortion of image
@@ -121,9 +124,10 @@ for i, gray in enumerate(resizeds):
     processing.append(gray)
     print('image', i, 'processed')
     # break
-            
-cv2.imshow('one image with circles', processed[which_image])
-cv2.imshow('what the algorithm sees', processing[which_image])
+       
+if display:     
+    cv2.imshow('one image with circles', processed[which_image])
+    cv2.imshow('what the algorithm sees', processing[which_image])
 
 
 # output results
