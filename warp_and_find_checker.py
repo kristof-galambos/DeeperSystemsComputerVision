@@ -1,3 +1,9 @@
+"""
+it's perfect on image 1!
+todo:
+   automatic aspect ratio calculation and resizing
+   make canny binarisation less strict -> better results on low-contrast circles
+"""
 
 import argparse
 import os
@@ -121,9 +127,9 @@ for i, gray in enumerate(resizeds):
         print(len(circles[0]), 'circles found')
         circles = np.round(circles[0, :]).astype("int")
         for (x, y, r) in circles:
-            cv2.circle(output, (x, y), r, (0, 0, 255), 4)
-            cv2.rectangle(output, (x - 5, y - 5), (x + 5, y + 5), (0, 0, 255), -1)
-            centres[i].append((x, y))
+            # cv2.circle(output, (x, y), r, (0, 0, 255), 4)
+            # cv2.rectangle(output, (x - 5, y - 5), (x + 5, y + 5), (0, 0, 255), -1)
+            # centres[i].append((x, y))
             radii[i].append(r)
         radii_stds.append(np.std(radii[i]))
         radii[i] = np.median(radii[i])
@@ -131,13 +137,13 @@ for i, gray in enumerate(resizeds):
         print('0 circles found')
     
     TOLERANCE = 10
-    circles2 = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 40, param1=50, param2=20, minRadius=int(round(radii[i]))-TOLERANCE, maxRadius=int(round(radii[i]))+TOLERANCE)
+    circles2 = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 40, param1=50, param2=17, minRadius=int(round(radii[i]))-TOLERANCE, maxRadius=int(round(radii[i]))+TOLERANCE)
     if circles2 is not None:
         print(len(circles2[0]), 'circles found in second round')
         circles2 = np.round(circles2[0, :]).astype("int")
         for (x, y, r) in circles2:
-            cv2.circle(output, (x, y), r, (255, 0, 0), 4)
-            cv2.rectangle(output, (x - 5, y - 5), (x + 5, y + 5), (255, 0, 0), -1)
+            cv2.circle(output, (x, y), r, (0, 0, 255), 4)
+            cv2.rectangle(output, (x - 5, y - 5), (x + 5, y + 5), (0, 0, 255), -1)
             centres[i].append((x, y))
     
     processed.append(output)
