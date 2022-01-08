@@ -129,6 +129,17 @@ for i, gray in enumerate(resizeds):
         radii[i] = np.median(radii[i])
     else:
         print('0 circles found')
+    
+    TOLERANCE = 10
+    circles2 = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 40, param1=50, param2=20, minRadius=int(round(radii[i]))-TOLERANCE, maxRadius=int(round(radii[i]))+TOLERANCE)
+    if circles2 is not None:
+        print(len(circles2[0]), 'circles found in second round')
+        circles2 = np.round(circles2[0, :]).astype("int")
+        for (x, y, r) in circles2:
+            cv2.circle(output, (x, y), r, (255, 0, 0), 4)
+            cv2.rectangle(output, (x - 5, y - 5), (x + 5, y + 5), (255, 0, 0), -1)
+            centres[i].append((x, y))
+    
     processed.append(output)
     processing.append(gray)
     print('image', i, 'processed')
