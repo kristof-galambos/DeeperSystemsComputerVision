@@ -16,7 +16,7 @@ args = parser.parse_args()
 input_path = args.input_path
 output_path = args.output_path
 
-display = False # do you want to display one image?
+display = True # do you want to display one image?
 which_image = 1 # which image to display
 
 
@@ -40,6 +40,7 @@ pip_lengths = [x['canonical_board']['pip_length_to_board_height'] for x in infos
 if display:
     # visualize one input image
     cv2.imshow('one input image', images[0])
+    cv2.imwrite('input_image.png', images[0])
 
 
 # remove perspective
@@ -75,12 +76,13 @@ grays = [cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) for img in no_persps]
 if display:
     # visualize one image with the perspective removed in grayscale
     cv2.imshow('one perspectiveless image', grays[which_image])
+    cv2.imwrite('perspective_removed.png', grays[which_image])
 
 
 # account for distortion of image
 resizeds = []
 for i, img in enumerate(grays):
-    scale_percent_x = 100
+    scale_percent_x = 100 # !!! need to calculate this somehow
     # scale_percent_x = board_widths[i] * 100 #- 20 # percent of original size
     # print(scale_percent_x)
     width = int(img.shape[1] * scale_percent_x / 100)
@@ -94,6 +96,9 @@ for i, img in enumerate(grays):
 processed = []
 processing = []
 centres = []
+radii = []
+radii_stds = []
+# radii_maes = []
 for i, gray in enumerate(resizeds):
     
     for _ in range(9):
@@ -111,23 +116,39 @@ for i, gray in enumerate(resizeds):
     # circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 80, param1=50, param2=60, minRadius=20, maxRadius=90)
     circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 80, param1=50, param2=20, minRadius=20, maxRadius=60)
     centres.append([])
+    radii.append([])
     if circles is not None:
         print(len(circles[0]), 'circles found')
         circles = np.round(circles[0, :]).astype("int")
         for (x, y, r) in circles:
-            cv2.circle(output, (x, y), r, (255, 0, 0), 4)
-            cv2.rectangle(output, (x - 5, y - 5), (x + 5, y + 5), (255, 0, 0), -1)
+            cv2.circle(output, (x, y), r, (0, 0, 255), 4)
+            cv2.rectangle(output, (x - 5, y - 5), (x + 5, y + 5), (0, 0, 255), -1)
             centres[i].append((x, y))
+            radii[i].append(r)
+        radii_stds.append(np.std(radii[i]))
+        radii[i] = np.median(radii[i])
     else:
         print('0 circles found')
     processed.append(output)
     processing.append(gray)
     print('image', i, 'processed')
     # break
+    
+# def mae(dataset, mean):
+#     n = len(dataset)
+#     mae = 0
+#     for i in range(len(dataset)):
+#         mae += np.abs(dataset[i] - mean)
+#     mae /= n
+#     return mae
        
 if display:     
     cv2.imshow('one image with circles', processed[which_image])
+    cv2.imwrite('circle_detection.png', processed[which_image])
     cv2.imshow('what the algorithm sees', processing[which_image])
+    cv2.imwrite('what_the_algorithm_sees.png', processing[which_image])
+    print(radii)
+    print(radii_stds)
 
 
 # output results
@@ -163,3 +184,10 @@ for i in range(len(image_files)):
     out_json = json.dumps(out_dir, indent=4)
     with open(output_filename, 'w') as f:
         f.write(out_json)
+        
+def cl():
+    cv2.destroyWindow('one input image')
+    cv2.destroyWindow('one perspectiveless image')
+    cv2.destroyWindow('one image with circles')
+    cv2.destroyWindow('what the algorithm sees')
+    
