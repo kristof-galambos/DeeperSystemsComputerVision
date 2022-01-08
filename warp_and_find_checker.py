@@ -25,6 +25,8 @@ output_path = args.output_path
 display = True # do you want to display one image?
 which_image = 1 # which image to display
 
+aspect_ratios = [0.8, 1.0, 0.8, 0.9, 1.3]
+
 
 # read in input data
 files = os.listdir(input_path)
@@ -88,7 +90,8 @@ if display:
 # account for distortion of image
 resizeds = []
 for i, img in enumerate(grays):
-    scale_percent_x = 100 # !!! need to calculate this somehow
+    # scale_percent_x = 100 # !!! need to calculate this somehow
+    scale_percent_x = aspect_ratios[i] * 100
     # scale_percent_x = board_widths[i] * 100 #- 20 # percent of original size
     # print(scale_percent_x)
     width = int(img.shape[1] * scale_percent_x / 100)
@@ -117,7 +120,13 @@ for i, gray in enumerate(resizeds):
     #     gray = cv2.filter2D(gray, -1, sharpening_kernel)
     
     # output = gray.copy()
-    output = no_persps[i].copy()
+    # output = no_persps[i].copy()
+    scale_percent_x = aspect_ratios[i] * 100
+    img = no_persps[i]
+    width = int(img.shape[1] * scale_percent_x / 100)
+    height = int(img.shape[0] * 100 / 100)
+    dim = (width, height)
+    output = cv2.resize(img, dim, interpolation = cv2.INTER_AREA).copy()
     # circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1.2, 100, param2=60, minRadius=20, maxRadius=90)
     # circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 80, param1=50, param2=60, minRadius=20, maxRadius=90)
     circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 80, param1=50, param2=20, minRadius=20, maxRadius=60)
